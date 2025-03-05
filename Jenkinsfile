@@ -24,9 +24,11 @@ pipeline {
                 }
             }
         }
-        stage('Deliver') {
+        stage('Deploy') {
             steps {
                 sh './jenkins/scripts/deliver.sh'
+                sleep(time: 60, unit: 'SECONDS') // Wait for 30 seconds
+                echo 'Service should be ready now.'
             }
         }
     }
