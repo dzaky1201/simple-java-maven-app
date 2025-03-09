@@ -49,12 +49,9 @@ pipeline {
                                  sshTransfer(
                                     sourceFiles: 'target/*.jar', // Path to the built JAR file
                                     removePrefix: 'target', // Remove the 'target' prefix from the file path
-                                    remoteDirectory: '/home/ubuntu', // Remote directory on EC2
+                                    remoteDirectory: '/app', // Remote directory on EC2
                                     execCommand: """
-                                        cd /home/ubuntu
-                                        echo 'Stopping existing application...'
-                                        pkill -f hello.jar || echo 'No process found to kill.'
-
+                                        cd /app
                                         echo 'Starting new application...'
                                         nohup java -jar hello.jar > app.log 2>&1 &
                                     """
