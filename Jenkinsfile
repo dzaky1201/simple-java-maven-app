@@ -51,7 +51,7 @@ pipeline {
                                     removePrefix: 'target', // Remove the 'target' prefix from the file path
                                     remoteDirectory: '/home/ubuntu/app', // Remote directory on EC2
                                     execCommand: """
-                                        cd /home/ubuntu/app
+                                        cd /home/ubuntu/app/app/home/ubuntu/app
                                         echo 'Starting new application...'
                                         java -jar my-app-1.0-SNAPSHOT.jar
                                     """
