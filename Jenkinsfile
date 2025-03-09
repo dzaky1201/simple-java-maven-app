@@ -40,17 +40,6 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                script {
-                    // SSH into the EC2 instance and kill the running process
-                    sshagent(credentials: ['login-user']) {
-                        sh """
-                            ssh -o StrictHostKeyChecking=no -i ubuntu@ec2-18-139-85-26.ap-southeast-1.compute.amazonaws.com '
-                                echo "Stopping existing Java application..."
-                                pkill -f hello.jar || echo "No process found to kill."
-                            '
-                        """
-                    }
-                }
                 // Use sshPublisher to upload the built artifacts to EC2
                 sshPublisher(
                     publishers: [
