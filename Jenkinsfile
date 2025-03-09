@@ -52,7 +52,10 @@ pipeline {
                                     remoteDirectory: '/home/ubuntu', // Remote directory on EC2
                                     execCommand: """
                                         cd /home/ubuntu
-                                        echo 'Starting new Java application...'
+                                        echo 'Stopping existing application...'
+                                        pkill -f hello.jar || echo 'No process found to kill.'
+
+                                        echo 'Starting new application...'
                                         nohup java -jar hello.jar > app.log 2>&1 &
                                     """
                                 )
@@ -63,8 +66,16 @@ pipeline {
                         )
                     ]
                 )
-                sleep(time: 60, unit: 'SECONDS') // Wait for 30 seconds
+                // sleep(time: 60, unit: 'SECONDS') // Wait for 30 seconds
             }
+        }
+    }
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
         }
     }
 }
