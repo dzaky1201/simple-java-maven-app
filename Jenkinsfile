@@ -63,7 +63,7 @@ pipeline {
                         )
                     ]
                 )
-                // sleep(time: 60, unit: 'SECONDS') // Wait for 30 seconds
+                sleep(time: 60, unit: 'SECONDS') // Wait for 30 seconds
             }
         }
     }
