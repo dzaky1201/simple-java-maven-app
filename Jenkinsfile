@@ -28,15 +28,7 @@ pipeline {
                     def userInput = input(
                         id: 'userInput', 
                         message: 'Lanjutkan ke tahap Deploy?', 
-                        parameters: [
-                            choice(
-                                name: 'approval', 
-                                choices: ['Proceed', 'Abort'], 
-                                description: 'Choose to approve or reject the deployment'
-                            )
-                        ]
                     )
-
                     // Check the user's input
                     if (userInput == 'Abort') {
                         error 'Deployment rejected by user.'
@@ -48,9 +40,32 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                sh './jenkins/scripts/deliver.sh'
+                // Use sshPublisher to upload the built artifacts to EC2
+                sshPublisher(
+                    publishers: [
+                        sshPublisherDesc(
+                            configName: 'ec2-18-139-85-26.ap-southeast-1.compute.amazonaws.com', // Name of the SSH server configuration in Jenkins
+                            transfers: [
+                                sshTransfer(
+                                    sourceFiles: 'target/*.jar', // Path to the built JAR file
+                                    removePrefix: 'target', // Remove the 'target' prefix from the file path
+                                    remoteDirectory: '/home/ubuntu', // Remote directory on EC2
+                                    execCommand: """
+                                        cd /home/ubuntu
+                                        echo 'Stopping existing Java application...'
+                                        pkill -f 'java -jar your-app.jar' || true
+                                        echo 'Starting new Java application...'
+                                        nohup java -jar your-app.jar > app.log 2>&1 &
+                                    """
+                                )
+                            ],
+                            usePromotionTimestamp: false,
+                            useWorkspaceInPromotion: false,
+                            verbose: true
+                        )
+                    ]
+                )
                 sleep(time: 60, unit: 'SECONDS') // Wait for 30 seconds
-                sh './jenkins/scripts/kill.sh'
             }
         }
     }
