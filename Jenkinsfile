@@ -40,22 +40,31 @@ pipeline {
         }
         stage('Deploy') {
             steps {
+                 script {
+                    // SSH into the EC2 instance and kill the running process
+                    sshagent(credentials: ['dzaky_login']) {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no -i hadar12.pem ubuntu@ec2-18-139-85-26.ap-southeast-1.compute.amazonaws.com '
+                                echo "Stopping existing Java application..."
+                                pkill -f hello.jar || echo "No process found to kill."
+                            '
+                        """
+                    }
+                }
                 // Use sshPublisher to upload the built artifacts to EC2
                 sshPublisher(
                     publishers: [
                         sshPublisherDesc(
-                            configName: 'ec2-18-139-85-26.ap-southeast-1.compute.amazonaws.com', // Name of the SSH server configuration in Jenkins
+                            configName: 'ssh-submission', // Name of the SSH server configuration in Jenkins
                             transfers: [
-                                sshTransfer(
+                                 sshTransfer(
                                     sourceFiles: 'target/*.jar', // Path to the built JAR file
                                     removePrefix: 'target', // Remove the 'target' prefix from the file path
                                     remoteDirectory: '/home/ubuntu', // Remote directory on EC2
                                     execCommand: """
                                         cd /home/ubuntu
-                                        echo 'Stopping existing Java application...'
-                                        pkill -f 'java -jar your-app.jar' || true
                                         echo 'Starting new Java application...'
-                                        nohup java -jar your-app.jar > app.log 2>&1 &
+                                        nohup java -jar $APP_NAME > app.log 2>&1 &
                                     """
                                 )
                             ],
