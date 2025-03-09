@@ -5,9 +5,6 @@ pipeline {
             args '-v /root/.m2:/root/.m2'
         }
     }
-    triggers {
-        pollSCM('*/2 * * * *') // Poll SCM every 2 minutes
-    }
     stages {
         stage('Build') {
             steps {
@@ -24,11 +21,36 @@ pipeline {
                 }
             }
         }
+        stage('Manual Approval') {
+            steps {
+                script {
+                    // Pause the pipeline and wait for manual approval
+                    def userInput = input(
+                        id: 'userInput', 
+                        message: 'Lanjutkan ke tahap Deploy?', 
+                        parameters: [
+                            choice(
+                                name: 'approval', 
+                                choices: ['Proceed', 'Abort'], 
+                                description: 'Choose to approve or reject the deployment'
+                            )
+                        ]
+                    )
+
+                    // Check the user's input
+                    if (userInput == 'Abort') {
+                        error 'Deployment rejected by user.'
+                    } else {
+                        echo 'Deployment approved by user. Proceeding...'
+                    }
+                }
+            }
+        }
         stage('Deploy') {
             steps {
                 sh './jenkins/scripts/deliver.sh'
                 sleep(time: 60, unit: 'SECONDS') // Wait for 30 seconds
-                echo 'Service should be ready now.'
+                sh './jenkins/scripts/kill.sh'
             }
         }
     }
