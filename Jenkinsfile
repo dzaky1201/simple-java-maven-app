@@ -53,7 +53,7 @@ pipeline {
                                     execCommand: """
                                         cd /home/ubuntu/app
                                         echo 'Starting new application...'
-                                        nohup java -jar hello.jar > app.log 2>&1 &
+                                        nohup java -jar my-app-1.0-SNAPSHOT.jar > app.log 2>&1 &
                                     """
                                 )
                             ],
